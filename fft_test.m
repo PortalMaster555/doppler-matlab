@@ -1,4 +1,4 @@
-clc; clear all; clf(1);
+clc; clear all; figure(1); clf(1);
 
 
 
@@ -6,7 +6,7 @@ fcn = @(t) 5 + 4*cos(10*2*pi*t);
 % expected result:
 % 5 @ 0Hz
 % 4 @ 10Hz
-sampleFreq = 30; % Hz
+sampleFreq = 48; % Hz
 fprintf("Maximum detectable frequency at or just below  %f Hz\n", ...
     sampleFreq/2);
 T = 5; % seconds
