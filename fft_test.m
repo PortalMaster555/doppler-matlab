@@ -31,14 +31,20 @@ fourierSmooth(fourierSmoothIndex) = 0;
 f = sampleFreq/N*(0:(N/2));
 
 figure(1);
-splt = subplot(2,1,1);
+splt = subplot(3,1,1);
+plot(t,fcn(t),"-k");
+title("fcn(t)");
+xlabel("t (s)");
+ylabel("Amplitude");
+
+splt2 = subplot(3,1,2);
 stem(f,fourier,".b");
 title("Single-Sided Amplitude Spectrum of fcn(t)")
 xlabel("f (Hz)")
 ylabel("|fourier(f)|")
 axis([-1, 1.1*max(f), 0, 1.05*max(fourier)]);
 
-splt(2) = subplot(2,1,2);
+splt3 = subplot(3,1,3);
 stem(f,fourierSmooth, ".r");
 title("Threshold Single-Sided Amplitude Spectrum of fcn(t)")
 xlabel("f (Hz)")
