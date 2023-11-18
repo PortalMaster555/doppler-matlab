@@ -3,18 +3,27 @@ clc; clear all;
 % Generate sample signal
 
 
-% Approaching = positive vSource; Receding = positive vSource
+% Approaching = negative vSource; Receding = positive vSource
 fObserver = @(vSource, vObserver, vSound, fSource) ...
     fSource*(vSound+vObserver)/(vSound+vSource);
 
 fSource = 440; %Hz
-app = fObserver(-10, 0, 343, fSource);
-rec = fObserver(10, 0, 343, fSource);
-avg = mean([app, rec]);
+trueV = 20; %m/s when receding
+c = vSound();
+app = fObserver(-trueV, 0, c, fSource);
+rec = fObserver(trueV, 0, c, fSource);
+% SUBSTITUTE MEASURED app, rec VALUES HERE
 
-fprintf("Approach: %f\nRecede: %f\nAvg: %f\nTrue: %f\n", ...
-    app, rec, avg, fSource);
-vSList();
+%only works for stationary observer
+velFcn = @(v) (c-v)*app - (c+v)*rec;
+sourceV = fsolve(velFcn, 0);
+
+fprintf("Approach: %f Hz\nRecede: %f Hz\nTrue: %f Hz\n", ...
+    app, rec, fSource);
+fprintf("True velocity: %f m/s\nEstimated velocity: %f m/s\n", ...
+    trueV, sourceV);
+
+%vSList();
 
 % FUNCTIONS
  
@@ -35,3 +44,4 @@ function vSList()
     end
     fprintf("Default vSound() output: %f\n", vSound());
 end
+
