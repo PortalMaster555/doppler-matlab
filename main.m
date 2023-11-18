@@ -1,1 +1,1 @@
-clc; clear all;
+clc; printSplash(); clear all;
