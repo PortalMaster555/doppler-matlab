@@ -14,7 +14,8 @@ app = fObserver(-trueV, 0, c, fSource);
 rec = fObserver(trueV, 0, c, fSource);
 % SUBSTITUTE MEASURED app, rec VALUES HERE
 
-%only works for stationary observer
+% only works for stationary observer in line with the vehicle
+% technically there should be a "radial" term for v
 velFcn = @(v) (c-v)*app - (c+v)*rec;
 sourceV = fsolve(velFcn, 0);
 
