@@ -1,15 +1,15 @@
 clc; printSplash(); figure(1); clf(1); clear all;
 
-audioFile = "test_10mps.wav";
+audioFile = "test_handel.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
 fprintf("Audio file loaded: %s (length %d samples)\n", audioFile, N);
 
-%fprintf("Playing sample of audio...\n")
-% audio = audioplayer(Amps,Fs); play(audio); 
-% pause(1); stop(audio);
-%fprintf("Playback complete.\n")
+fprintf("Playing sample of audio...\n")
+audio = audioplayer(Amps,Fs); play(audio); 
+pause(1); stop(audio);
+fprintf("Playback complete.\n")
 
 fprintf("Maximum detectable frequency at or just below  %f Hz\n", Fs/2);
 
@@ -23,9 +23,6 @@ ampStft = abs(stfourier);
 
 deltaT = t(end)-t(end-1);
 deltaF = f(end)-f(end-1);
-changeIndices = findchangepts(ampStft,MaxNumChanges=2,Statistic="rms");
-beginT = changeIndices(1)*deltaT;
-endT = changeIndices(2)*deltaT;
 
 % Plot spectrogram
 fprintf("Plotting spectrogram...\n")
@@ -37,6 +34,13 @@ cb = colorbar; cb.TicksMode = "manual";
 ylabel(cb,'Amplitude', Rotation=270);
 
 % Plot vertical lines at largest changes
+changeIndices = findchangepts(ampStft,MaxNumChanges=2,Statistic="rms");
+if size(changeIndices,1) < 2
+    %fixes a bug where it doesn't find a second change
+    changeIndices(2) = changeIndices(1);
+end
+beginT = changeIndices(1)*deltaT;
+endT = changeIndices(2)*deltaT;
 fprintf("Plotting time position of change points...\n")
 xline(beginT, "r", LineWidth=1); xline(endT, "r", LineWidth=1);
 
@@ -53,8 +57,10 @@ axis([0, max(t), 0, 5000]);
 colorbar;
 
 % Perform very aggressive smoothing on the image across time
-fprintf("Smoothing over time...\n")
-smoothAmps = movmean(ampStft', 100);
+fprintf("Smoothing over time...\nAdjust smoothing constant if" + ...
+    " results are not valid.\n")
+smoothingConstant = 100;
+smoothAmps = movmean(ampStft', smoothingConstant);
 smoothAmps = smoothAmps';
 
 figure(3); clf(3);
