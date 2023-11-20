@@ -14,3 +14,19 @@ https://www.mathworks.com/help/images/ref/bwconncomp.html
 https://www.mathworks.com/help/matlab/ref/ind2sub.html
 
 https://www.mathworks.com/matlabcentral/answers/552067-fit-a-polynimial-function-on-a-image-curve
+
+Edge detection:
+https://www.mathworks.com/help/images/ref/edge.html
+
+https://stackoverflow.com/questions/37771997/how-to-find-two-closest-nearest-values-within-a-vector-in-matlab
+
+
+
+
+
+
+
+
+
+
+
