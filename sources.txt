@@ -5,3 +5,7 @@ https://www.audiolabs-erlangen.de/resources/MIR/FMP/C2/C2_STFT-Window.html
 Long Hann Window seems best for this purpose
 
 https://www.mathworks.com/help/signal/ref/findchangepts.html
+
+Getting the curves:
+https://www.mathworks.com/help/images/ref/imbinarize.html
+https://www.mathworks.com/help/images/ref/bwconncomp.html
