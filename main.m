@@ -1,5 +1,8 @@
 clc; printSplash(); figure(1); clf(1); clear all;
 
+% CONSTANTS (tweak as needed)
+smoothingConstant = 20;
+num_to_take = 10;
 audioFile = "50mphobserver.wav";
 
 [Amps, Fs] = audioread(audioFile);
@@ -29,7 +32,7 @@ fprintf("Plotting spectrogram...\n")
 imagesc(t, f, ampStft); hold on;
 set(gca,'YDir','normal');
 xlabel("Time (s)"); ylabel("Frequency (Hz)");
-axis([0, max(t), 0, floor(max(f)*0.15)])
+
 cb = colorbar; cb.TicksMode = "manual";
 ylabel(cb,'Amplitude', Rotation=270);
 
@@ -59,7 +62,7 @@ colorbar;
 % Perform very aggressive smoothing on the image across time
 fprintf("Smoothing over time...\nAdjust smoothing constant if" + ...
     " results are not valid.\n")
-smoothingConstant = 100;
+
 smoothAmps = movmean(ampStft', smoothingConstant);
 smoothAmps = smoothAmps';
 
@@ -100,8 +103,8 @@ hold on;
 stem(f, fEndSums, ".b");
 axis([0, 4000, 0, max(fBegSums)]);
 
-% Take highest-amp frequencies
-num_to_take = 3;
+% Take highest-amp frequencies (constant in beginning of file)
+
 fprintf("Choosing and plotting highest %d means...\n", num_to_take);
 
 [maxAmpsB, begMaxFIndices] = maxk(fBegSums, num_to_take);
