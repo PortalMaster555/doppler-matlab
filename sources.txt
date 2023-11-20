@@ -3,3 +3,5 @@ http://hyperphysics.phy-astr.gsu.edu/hbase/Sound/souspe3.html
 
 https://www.audiolabs-erlangen.de/resources/MIR/FMP/C2/C2_STFT-Window.html
 Long Hann Window seems best for this purpose
+
+https://www.mathworks.com/help/signal/ref/findchangepts.html

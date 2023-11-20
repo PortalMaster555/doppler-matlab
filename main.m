@@ -6,10 +6,10 @@ audioFile = "50mphobserver.wav";
 N = size(Amps,1); % number of samples
 fprintf("Audio file loaded: %s (length %d samples)\n", audioFile, N);
 
-fprintf("Playing sample of audio:\n")
-audio = audioplayer(Amps,Fs); play(audio); 
-% pause(1.5); stop(audio);
-fprintf("Playback complete.\n")
+%fprintf("Playing sample of audio...\n")
+% audio = audioplayer(Amps,Fs); play(audio); 
+% pause(1); stop(audio);
+%fprintf("Playback complete.\n")
 
 fprintf("Maximum detectable frequency at or just below  %f Hz\n", Fs/2);
 
@@ -23,19 +23,23 @@ ampStft = abs(stfourier);
 
 deltaT = t(end)-t(end-1);
 deltaF = f(end)-f(end-1);
-%f,t,ampStft
-
-imagesc(t, f, ampStft);
-hold on;
-set(gca,'YDir','normal');
-xlabel("Time (s)");
-ylabel("Frequency (Hz)");
-
 changeIndices = findchangepts(ampStft,MaxNumChanges=2,Statistic="rms");
 beginT = changeIndices(1)*deltaT;
 endT = changeIndices(2)*deltaT;
 
-%plot vertical lines at largest changes
-xline(beginT, "r", LineWidth=1);
-xline(endT, "r", LineWidth=1);
+% Plot spectrogram
+fprintf("Plotting spectrogram...\n")
+imagesc(t, f, ampStft); hold on;
+set(gca,'YDir','normal');
+xlabel("Time (s)"); ylabel("Frequency (Hz)");
 axis([0, max(t), 0, floor(max(f)*0.15)])
+cb = colorbar; cb.TicksMode = "manual";
+ylabel(cb,'Amplitude', Rotation=270);
+
+% Plot vertical lines at largest changes
+fprintf("Plotting time position of change points...\n")
+xline(beginT, "r", LineWidth=1); xline(endT, "r", LineWidth=1);
+
+% Get mean frequency up to before the first changepoint
+
+
