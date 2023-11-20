@@ -3,7 +3,7 @@ clc; printSplash(); figure(1); clf(1); clear all;
 % CONSTANTS (tweak as needed)
 smoothingConstant = 20;
 num_to_take = 10;
-audioFile = "50mphobserver.wav";
+audioFile = "horn.ogg";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
