@@ -1,6 +1,6 @@
 clc; printSplash(); figure(1); clf(1); clear all;
 
-audioFile = "50mphobserver.wav";
+audioFile = "test_10mps.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
@@ -130,7 +130,8 @@ v1 = sourceV(minDiffInd);
 v2 = sourceV(minDiffInd+1);
 
 avgClosestV = mean([v1, v2]);
+fprintf("Estimated velocity: %f m/s.\n", avgClosestV);
+
 % Convert to MPH from m/s
 avgClosestV = 2.237 * avgClosestV;
-
 fprintf("Estimated velocity: %f mph.\n", avgClosestV);
