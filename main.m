@@ -1,6 +1,6 @@
 clc; printSplash(); figure(1); clf(1); clear all;
 
-audioFile = "test_handel.wav";
+audioFile = "50mphobserver.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
@@ -35,7 +35,7 @@ ylabel(cb,'Amplitude', Rotation=270);
 
 % Plot vertical lines at largest changes
 changeIndices = findchangepts(ampStft,MaxNumChanges=2,Statistic="rms");
-if size(changeIndices,1) < 2
+if size(changeIndices, 2) < 2
     %fixes a bug where it doesn't find a second change
     changeIndices(2) = changeIndices(1);
 end
