@@ -31,3 +31,4 @@ endT = changeIndices(2)*deltaT;
 xline(beginT, "r", LineWidth=1);
 xline(endT, "r", LineWidth=1);
 axis([0, max(t), 0, floor(max(f)*0.15)])
+save("testvars.mat")
