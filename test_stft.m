@@ -2,7 +2,7 @@ clc;
 %figure(2); clf(2); 
 figure(1); clf(1); clear all;
 
-audioFile = "test_10mps.wav";
+audioFile = "50mphobserver.wav";
 [Amps, Fs] = audioread(audioFile);
 audio = audioplayer(Amps,Fs); play(audio); 
 N = size(Amps,1); % number of samples
@@ -31,4 +31,4 @@ endT = changeIndices(2)*deltaT;
 xline(beginT, "r", LineWidth=1);
 xline(endT, "r", LineWidth=1);
 axis([0, max(t), 0, floor(max(f)*0.15)])
-save("testvars.mat")
+save("testvars50.mat")

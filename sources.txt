@@ -8,4 +8,9 @@ https://www.mathworks.com/help/signal/ref/findchangepts.html
 
 Getting the curves:
 https://www.mathworks.com/help/images/ref/imbinarize.html
+https://www.mathworks.com/help/signal/ug/signal-smoothing.html
 https://www.mathworks.com/help/images/ref/bwconncomp.html
+
+https://www.mathworks.com/help/matlab/ref/ind2sub.html
+
+https://www.mathworks.com/matlabcentral/answers/552067-fit-a-polynimial-function-on-a-image-curve
