@@ -1,9 +1,13 @@
 clc; printSplash(); clear all;
 
 % CONSTANTS (tweak as needed)
-smoothingConstant = 10;
-num_to_take = 10;
-audioFile = "50mphobserver.wav";
+% smoothingConstant = 10;
+num_to_take = 3;
+
+% audioFile = "50mphobserver.wav";
+% audioFile = "horn.ogg";
+% audioFile = "test_10mps.wav";
+audioFile = "test_440_48khz.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
@@ -128,11 +132,18 @@ highestFEnd = sort(highestFEnd);
 % Repeats are allowed
 
 for i = 1:size(highestFBeg, 1)
-    ind = find(highestFEnd < highestFBeg(i,1));
+    ind = find(highestFEnd <= highestFBeg(i,1));
     % fprintf("highestVal: %f\n", highestFBeg(i));
     % fprintf("correspondingEnd: %f\n\n", highestFEnd(ind(end)));
-    app(i) = highestFBeg(i);
-    rec(i) = highestFEnd(ind(end));
+    if isempty(ind)
+        %Fixes cases where there is no lower end value than a beginning
+        %value (sets beginning and end equal, so v=0)
+        app(i) = highestFBeg(i);
+        rec(i) = highestFBeg(i);
+    else
+        app(i) = highestFBeg(i);
+        rec(i) = highestFEnd(ind(end));
+    end
 end
 
 c = vSound();
