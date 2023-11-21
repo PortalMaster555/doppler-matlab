@@ -1,13 +1,17 @@
 clc; printSplash(); clear all;
 
 % CONSTANTS (tweak as needed)
-% smoothingConstant = 10;
-num_to_take = 3;
+num_to_take = 10; % must be greater than 1, decrease if the audio has fewer 
+                    % overtones or if the window size is very large
 
-% audioFile = "50mphobserver.wav";
+WINDOW_SIZE = 2048; %larger seems to work better, but the changepoint 
+                    % calculation hangs sometimes
+% smoothingConstant = 10;
+
+audioFile = "50mphobserver.wav";
 % audioFile = "horn.ogg";
 % audioFile = "test_10mps.wav";
-audioFile = "test_440_48khz.wav";
+% audioFile = "test_440_48khz.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
@@ -24,9 +28,8 @@ fprintf("Maximum detectable frequency at or just below  %f Hz\n", Fs/2);
 % Compute the short-time Fourier transform
 % Windowing function: length 2048 Hann
 % One-sided frequency range (absolute amplitude not preserved)
-WINDOW = hann(2048);
 [stfourier, f, t] = stft(Amps, Fs, FrequencyRange="onesided", ...
-    Window=WINDOW);
+    Window=hann(WINDOW_SIZE));
 ampStft = abs(stfourier);
 
 deltaT = t(end)-t(end-1);
