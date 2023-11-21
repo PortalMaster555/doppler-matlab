@@ -1,9 +1,9 @@
 clc; printSplash(); figure(1); clf(1); clear all;
 
 % CONSTANTS (tweak as needed)
-smoothingConstant = 20;
+smoothingConstant = 10;
 num_to_take = 10;
-audioFile = "horn.ogg";
+audioFile = "50mphobserver.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
@@ -60,11 +60,14 @@ axis([0, max(t), 0, 5000]);
 colorbar;
 
 % Perform very aggressive smoothing on the image across time
-fprintf("Smoothing over time...\nAdjust smoothing constant if" + ...
-    " results are not valid.\n")
+% May not be necessary
+% fprintf("Smoothing over time...\nAdjust smoothing constant if" + ...
+%     " results are not valid.\n")
+% smoothAmps = movmean(ampStft', smoothingConstant);
+% smoothAmps = smoothAmps';
 
-smoothAmps = movmean(ampStft', smoothingConstant);
-smoothAmps = smoothAmps';
+% No smoothing needed
+smoothAmps = ampStft;
 
 figure(3); clf(3);
 fprintf("Plotting smoothed spectrogram...\n")
@@ -90,6 +93,8 @@ endAmps = smoothAmps(:, endRange);
 tbeg = t(begRange); tend = t(endRange);
 %imagesc(tbeg, f, begAmps);
 %imagesc(tend, f, endAmps);
+
+% Weirdest part of the data analysis
 
 % Calculate mean of each frequency band across time
 % outside of the middle region to find most constant frequencies
@@ -117,14 +122,19 @@ highestFEnd = f(endMaxFIndices);
 plot(highestFEnd, maxAmpsE, "om",LineStyle="none");
 highestFEnd = sort(highestFEnd);
 
+save("test_freqpairbeg")
+
+% Pair each beginning frequency with the closest end frequency below it
+% Repeats are allowed
+
+highestFBeg;
+
+
 c = vSound();
 fprintf("Speed of sound taken as %f m/s.\n", c);
-
 fprintf("Analyzing velocity based on highest %d means...\n", num_to_take);
 options = optimset('Display','off');
 for i = 1:size(highestFBeg, 1)
-    app(i) = highestFBeg(i);
-    rec(i) = highestFEnd(i);
     velFcn = @(v) (c-v)*app(i) - (c+v)*rec(i);
     sourceV(i) = fsolve(velFcn, 0, options);
     %fprintf("Approach: %f Hz\nRecede: %f Hz\nVel Est.: %f m/s\n\n", ...
@@ -134,7 +144,7 @@ end
 fprintf("Finding closest two velocities from the %d and averaging...\n", ...
     num_to_take);
 minDiffInd = find(abs(diff(sourceV))==min(abs(diff(sourceV))));
-%extract this index, and it's neighbor index from A
+% extract this index and its neighbor index
 v1 = sourceV(minDiffInd);
 v2 = sourceV(minDiffInd+1);
 
