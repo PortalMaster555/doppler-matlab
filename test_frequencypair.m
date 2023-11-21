@@ -3,9 +3,6 @@ load("test_freqpairbeg")
 % Pair each beginning frequency with the closest end frequency below it
 % Repeats are allowed
 
-fullFArray = [highestFBeg highestFEnd];
-% col 1, fBeg   col 2, fEnd
-
 for i = 1:size(highestFBeg, 1)
     ind = find(highestFEnd < highestFBeg(i,1));
     fprintf("highestVal: %f\n", highestFBeg(i));

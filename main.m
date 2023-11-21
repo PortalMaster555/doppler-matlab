@@ -1,4 +1,4 @@
-clc; printSplash(); figure(1); clf(1); clear all;
+clc; printSplash(); clear all;
 
 % CONSTANTS (tweak as needed)
 smoothingConstant = 10;
@@ -10,8 +10,9 @@ N = size(Amps,1); % number of samples
 fprintf("Audio file loaded: %s (length %d samples)\n", audioFile, N);
 
 fprintf("Playing sample of audio...\n")
-audio = audioplayer(Amps,Fs); play(audio); 
-pause(1); stop(audio);
+audio = audioplayer(Amps, Fs); 
+play(audio); 
+pause(2); stop(audio);
 fprintf("Playback complete.\n")
 
 fprintf("Maximum detectable frequency at or just below  %f Hz\n", Fs/2);
@@ -27,14 +28,14 @@ ampStft = abs(stfourier);
 deltaT = t(end)-t(end-1);
 deltaF = f(end)-f(end-1);
 
-% Plot spectrogram
-fprintf("Plotting spectrogram...\n")
-imagesc(t, f, ampStft); hold on;
-set(gca,'YDir','normal');
-xlabel("Time (s)"); ylabel("Frequency (Hz)");
-
-cb = colorbar; cb.TicksMode = "manual";
-ylabel(cb,'Amplitude', Rotation=270);
+% % Plot spectrogram
+% fprintf("Plotting spectrogram...\n")
+% figure(1); clf(1);
+% imagesc(t, f, ampStft); hold on;
+% set(gca,'YDir','normal');
+% xlabel("Time (s)"); ylabel("Frequency (Hz)");
+% cb = colorbar; cb.TicksMode = "manual";
+% ylabel(cb,'Amplitude', Rotation=270);
 
 % Plot vertical lines at largest changes
 changeIndices = findchangepts(ampStft,MaxNumChanges=2,Statistic="rms");
@@ -44,20 +45,20 @@ if size(changeIndices, 2) < 2
 end
 beginT = changeIndices(1)*deltaT;
 endT = changeIndices(2)*deltaT;
-fprintf("Plotting time position of change points...\n")
-xline(beginT, "r", LineWidth=1); xline(endT, "r", LineWidth=1);
+% fprintf("Plotting time position of change points...\n")
+% xline(beginT, "r", LineWidth=1); xline(endT, "r", LineWidth=1);
 
 % Draw a colormap of the unsmoothed audio spectrogram
-fprintf("Drawing unsmoothed colormap...\n")
-figure(2); clf(2);
-c = "default"; colormap(c);
-imagesc(t, f, ampStft);
-hold on;
-set(gca,'YDir','normal');
-xlabel("Time (s)");
-ylabel("Frequency (Hz)");
-axis([0, max(t), 0, 5000]);
-colorbar;
+% fprintf("Drawing unsmoothed colormap...\n")
+% figure(2); clf(2);
+% c = "default"; colormap(c);
+% imagesc(t, f, ampStft);
+% hold on;
+% set(gca,'YDir','normal');
+% xlabel("Time (s)");
+% ylabel("Frequency (Hz)");
+% axis([0, max(t), 0, 5000]);
+% colorbar;
 
 % Perform very aggressive smoothing on the image across time
 % May not be necessary
@@ -70,7 +71,8 @@ colorbar;
 smoothAmps = ampStft;
 
 figure(3); clf(3);
-fprintf("Plotting smoothed spectrogram...\n")
+% fprintf("Plotting smoothed spectrogram...\n")
+fprintf("Plotting spectrogram...\n")
 c = "default"; colormap(c);
 imagesc(t, f, smoothAmps);
 hold on;
@@ -122,13 +124,16 @@ highestFEnd = f(endMaxFIndices);
 plot(highestFEnd, maxAmpsE, "om",LineStyle="none");
 highestFEnd = sort(highestFEnd);
 
-save("test_freqpairbeg")
-
 % Pair each beginning frequency with the closest end frequency below it
 % Repeats are allowed
 
-highestFBeg;
-
+for i = 1:size(highestFBeg, 1)
+    ind = find(highestFEnd < highestFBeg(i,1));
+    % fprintf("highestVal: %f\n", highestFBeg(i));
+    % fprintf("correspondingEnd: %f\n\n", highestFEnd(ind(end)));
+    app(i) = highestFBeg(i);
+    rec(i) = highestFEnd(ind(end));
+end
 
 c = vSound();
 fprintf("Speed of sound taken as %f m/s.\n", c);
