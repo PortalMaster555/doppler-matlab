@@ -1,5 +1,5 @@
 clear all;
-audioFile = "50mphobserver.wav";
+audioFile = "./audio/50mphobserver.wav";
 % audioFile = "horn.ogg";
 % audioFile = "test_10mps.wav";
 % audioFile = "test_440_48khz.wav";
@@ -84,19 +84,21 @@ xline(beginT, "r", LineWidth=1);
 xline(endT, "r", LineWidth=1);
 
 fprintf("Detecting edges...\n")
-filteredAmps = edge(filteredAmps, 'Canny');
+edges = edge(filteredAmps, 'Canny');
 
 % Filter
 % filteredAmps = filterAudio(ampStft);
 
 % Isolate ends (outside of the middle transition)
 begRange = 1:changeIndices(1);
-endRange = changeIndices(2):size(filteredAmps,2);
-begAmps = filteredAmps(:, begRange);
-endAmps = filteredAmps(:, endRange);
+endRange = changeIndices(2):size(edges,2);
+begAmps = edges(:, begRange);
+endAmps = edges(:, endRange);
 tbeg = t(begRange); tend = t(endRange);
 %imagesc(tbeg, f, begAmps);
 %imagesc(tend, f, endAmps);
+
+save("alternateanalysisroute");
 
 % Weirdest part of the data analysis
 
@@ -122,7 +124,7 @@ title(audioFile);
 xlabel("Points chosen"); ylabel("Speed (MPH)");
 text(1:length(avgClosestV),avgClosestV,num2str(avgClosestV'), ...
     'vert','bottom','horiz','center'); 
-savefig(strcat(audioFile,'.fig'));
+%savefig(strcat(audioFile,'.fig'));
 
 
 function avgClosestV = mainfcn(NUM_TO_TAKE, fBegSums, fEndSums, f, ...
