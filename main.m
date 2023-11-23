@@ -1,30 +1,33 @@
-clc; printSplash(); clear all;
-
-% CONSTANTS (tweak as needed)
-NUM_TO_TAKE = 3; % must be greater than 1, decrease if the audio has fewer 
-                    % overtones or if the window size is very large
-
-WINDOW_SIZE = 2048; %larger seems to work better, but the changepoint 
-                    % calculation hangs sometimes
-% TEMPERATURE = "UNKNOWN";
-TEMPERATURE = 44; %F
-% smoothingConstant = 10;
-
-% audioFile = "50mphobserver.wav";
+clear all;
+audioFile = "50mphobserver.wav";
 % audioFile = "horn.ogg";
 % audioFile = "test_10mps.wav";
 % audioFile = "test_440_48khz.wav";
-audioFile = "56mph44F.wav";
+% audioFile = "56mph44F.wav";
+
+clc; printSplash();
+
+% CONSTANTS (tweak as needed)
+% NUM_TO_TAKE = 1; % decrease if the audio has fewer overtones or if the 
+                    % window size is very large
+
+WINDOW_SIZE = 2048; %larger seems to work better, but the changepoint 
+                    % calculation hangs sometimes
+TEMPERATURE = "UNKNOWN";
+% TEMPERATURE = 44; %F
+% smoothingConstant = 10;
+
+
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
 fprintf("Audio file loaded: %s (length %d samples)\n", audioFile, N);
-
-fprintf("Playing sample of audio...\n")
+% 
+% fprintf("Playing sample of audio...\n")
 % audio = audioplayer(Amps, Fs); 
 % play(audio); 
-% pause(2); stop(audio);
-fprintf("Playback complete.\n")
+% % pause(2); stop(audio);
+% fprintf("Playback complete.\n")
 
 fprintf("Maximum detectable frequency at or just below  %f Hz\n", Fs/2);
 
@@ -109,6 +112,21 @@ hold on;
 stem(f, fEndSums, ".b");
 axis([0, 4000, 0, max(fBegSums)]);
 
+
+for i = 1:20
+    avgClosestV(i) = mainfcn(i, fBegSums, fEndSums, f, TEMPERATURE);
+end
+figure(5); clf(5);
+stem(avgClosestV, ".k");
+title(audioFile);
+xlabel("Points chosen"); ylabel("Speed (MPH)");
+text(1:length(avgClosestV),avgClosestV,num2str(avgClosestV'), ...
+    'vert','bottom','horiz','center'); 
+savefig(strcat(audioFile,'.fig'));
+
+
+function avgClosestV = mainfcn(NUM_TO_TAKE, fBegSums, fEndSums, f, ...
+    TEMPERATURE)
 % Take highest-amp frequencies (constant in beginning of file)
 
 fprintf("Choosing and plotting highest %d means...\n", NUM_TO_TAKE);
@@ -158,16 +176,22 @@ for i = 1:size(highestFBeg, 1)
     %app(i), rec(i), sourceV(i));
 end
 
-fprintf("Finding closest two velocities from the %d and averaging...\n", ...
-    NUM_TO_TAKE);
-minDiffInd = find(abs(diff(sourceV))==min(abs(diff(sourceV))));
-% extract this index and its neighbor index
-v1 = sourceV(minDiffInd);
-v2 = sourceV(minDiffInd+1);
+if size(sourceV,2) >= 2
+    fprintf("Finding closest two velocities from the %d and averaging...\n", ...
+        NUM_TO_TAKE);
+    minDiffInd = find(abs(diff(sourceV))==min(abs(diff(sourceV))));
+    % extract this index and its neighbor index
+    v1 = sourceV(minDiffInd);
+    v2 = sourceV(minDiffInd+1);
+    avgClosestV = mean([v1, v2]);
+else
+    avgClosestV = sourceV;
+end
 
-avgClosestV = mean([v1, v2]);
 fprintf("Estimated velocity: %f m/s.\n", avgClosestV);
 
 % Convert to MPH from m/s
 avgClosestV = 2.237 * avgClosestV;
 fprintf("Estimated velocity: %f mph.\n", avgClosestV);
+
+end
