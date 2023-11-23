@@ -14,16 +14,16 @@ TEMPERATURE = 44; %F
 % audioFile = "horn.ogg";
 % audioFile = "test_10mps.wav";
 % audioFile = "test_440_48khz.wav";
-audioFile = "56mph.wav";
+audioFile = "56mph44F.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
 fprintf("Audio file loaded: %s (length %d samples)\n", audioFile, N);
 
 fprintf("Playing sample of audio...\n")
-audio = audioplayer(Amps, Fs); 
-play(audio); 
-pause(2); stop(audio);
+% audio = audioplayer(Amps, Fs); 
+% play(audio); 
+% pause(2); stop(audio);
 fprintf("Playback complete.\n")
 
 fprintf("Maximum detectable frequency at or just below  %f Hz\n", Fs/2);
@@ -38,15 +38,6 @@ ampStft = abs(stfourier);
 deltaT = t(end)-t(end-1);
 deltaF = f(end)-f(end-1);
 
-% % Plot spectrogram
-% fprintf("Plotting spectrogram...\n")
-% figure(1); clf(1);
-% imagesc(t, f, ampStft); hold on;
-% set(gca,'YDir','normal');
-% xlabel("Time (s)"); ylabel("Frequency (Hz)");
-% cb = colorbar; cb.TicksMode = "manual";
-% ylabel(cb,'Amplitude', Rotation=270);
-
 % Plot vertical lines at largest changes
 changeIndices = findchangepts(ampStft,MaxNumChanges=2,Statistic="rms");
 if size(changeIndices, 2) < 2
@@ -55,35 +46,31 @@ if size(changeIndices, 2) < 2
 end
 beginT = changeIndices(1)*deltaT;
 endT = changeIndices(2)*deltaT;
-% fprintf("Plotting time position of change points...\n")
-% xline(beginT, "r", LineWidth=1); xline(endT, "r", LineWidth=1);
 
-% Draw a colormap of the unsmoothed audio spectrogram
-% fprintf("Drawing unsmoothed colormap...\n")
-% figure(2); clf(2);
-% c = "default"; colormap(c);
-% imagesc(t, f, ampStft);
-% hold on;
-% set(gca,'YDir','normal');
-% xlabel("Time (s)");
-% ylabel("Frequency (Hz)");
-% axis([0, max(t), 0, 5000]);
-% colorbar;
+% Plot spectrogram
+fprintf("Plotting spectrogram...\n")
+figure(1); clf(1);
+imagesc(t, f, ampStft); hold on;
+set(gca,'YDir','normal');
+xlabel("Time (s)"); ylabel("Frequency (Hz)");
+cb = colorbar; cb.TicksMode = "manual";
+ylabel(cb,'Amplitude', Rotation=270);
+xline(beginT, "r", LineWidth=1);
+xline(endT, "r", LineWidth=1);
 
-% Perform very aggressive smoothing on the image across time
-% May not be necessary
-% fprintf("Smoothing over time...\nAdjust smoothing constant if" + ...
-%     " results are not valid.\n")
-% smoothAmps = movmean(ampStft', smoothingConstant);
-% smoothAmps = smoothAmps';
+figure(2); clf(2);
+surf(t, f, ampStft); %plot frequency breakdown in 3d
+shading interp
 
-% No smoothing needed
+freqHigh = 2000;
+% filteredAmps = highpass(ampStft,freqHigh,Fs);
+filteredAmps = ampStft;
 
 figure(3); clf(3);
 % fprintf("Plotting smoothed spectrogram...\n")
 fprintf("Plotting spectrogram...\n")
 c = "default"; colormap(c);
-imagesc(t, f, ampStft);
+imagesc(t, f, filteredAmps);
 hold on;
 set(gca,'YDir','normal');
 xlabel("Time (s)");
@@ -94,16 +81,16 @@ xline(beginT, "r", LineWidth=1);
 xline(endT, "r", LineWidth=1);
 
 fprintf("Detecting edges...\n")
-ampStft = edge(ampStft, 'Canny');
+filteredAmps = edge(filteredAmps, 'Canny');
 
 % Filter
 % filteredAmps = filterAudio(ampStft);
 
 % Isolate ends (outside of the middle transition)
 begRange = 1:changeIndices(1);
-endRange = changeIndices(2):size(ampStft,2);
-begAmps = ampStft(:, begRange);
-endAmps = ampStft(:, endRange);
+endRange = changeIndices(2):size(filteredAmps,2);
+begAmps = filteredAmps(:, begRange);
+endAmps = filteredAmps(:, endRange);
 tbeg = t(begRange); tend = t(endRange);
 %imagesc(tbeg, f, begAmps);
 %imagesc(tend, f, endAmps);
