@@ -24,6 +24,11 @@ endFreqAvgs = mean(endFiltAmps, 2);
 
 figure(3); clf(3);
 pltB = subplot(2,1,1);
-plot(f, begFreqAvgs);
+stem(f, begFreqAvgs);
+xlim([0 0.5e4]);
+findpeaks(begFreqAvgs);
+
 pltE = subplot(2,1,2);
-plot(f, endFreqAvgs);
+stem(f, endFreqAvgs);
+xlim([0 0.5e4]);
+findpeaks(endFreqAvgs);
