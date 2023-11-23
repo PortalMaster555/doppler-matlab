@@ -1,17 +1,20 @@
 clc; printSplash(); clear all;
 
 % CONSTANTS (tweak as needed)
-num_to_take = 10; % must be greater than 1, decrease if the audio has fewer 
+NUM_TO_TAKE = 3; % must be greater than 1, decrease if the audio has fewer 
                     % overtones or if the window size is very large
 
 WINDOW_SIZE = 2048; %larger seems to work better, but the changepoint 
                     % calculation hangs sometimes
+% TEMPERATURE = "UNKNOWN";
+TEMPERATURE = 44; %F
 % smoothingConstant = 10;
 
-audioFile = "50mphobserver.wav";
+% audioFile = "50mphobserver.wav";
 % audioFile = "horn.ogg";
 % audioFile = "test_10mps.wav";
 % audioFile = "test_440_48khz.wav";
+audioFile = "56mph.wav";
 
 [Amps, Fs] = audioread(audioFile);
 N = size(Amps,1); % number of samples
@@ -75,13 +78,12 @@ endT = changeIndices(2)*deltaT;
 % smoothAmps = smoothAmps';
 
 % No smoothing needed
-smoothAmps = ampStft;
 
 figure(3); clf(3);
 % fprintf("Plotting smoothed spectrogram...\n")
 fprintf("Plotting spectrogram...\n")
 c = "default"; colormap(c);
-imagesc(t, f, smoothAmps);
+imagesc(t, f, ampStft);
 hold on;
 set(gca,'YDir','normal');
 xlabel("Time (s)");
@@ -92,13 +94,16 @@ xline(beginT, "r", LineWidth=1);
 xline(endT, "r", LineWidth=1);
 
 fprintf("Detecting edges...\n")
-smoothAmps = edge(smoothAmps, 'Canny');
+ampStft = edge(ampStft, 'Canny');
+
+% Filter
+% filteredAmps = filterAudio(ampStft);
 
 % Isolate ends (outside of the middle transition)
 begRange = 1:changeIndices(1);
-endRange = changeIndices(2):size(smoothAmps,2);
-begAmps = smoothAmps(:, begRange);
-endAmps = smoothAmps(:, endRange);
+endRange = changeIndices(2):size(ampStft,2);
+begAmps = ampStft(:, begRange);
+endAmps = ampStft(:, endRange);
 tbeg = t(begRange); tend = t(endRange);
 %imagesc(tbeg, f, begAmps);
 %imagesc(tend, f, endAmps);
@@ -119,14 +124,14 @@ axis([0, 4000, 0, max(fBegSums)]);
 
 % Take highest-amp frequencies (constant in beginning of file)
 
-fprintf("Choosing and plotting highest %d means...\n", num_to_take);
+fprintf("Choosing and plotting highest %d means...\n", NUM_TO_TAKE);
 
-[maxAmpsB, begMaxFIndices] = maxk(fBegSums, num_to_take);
+[maxAmpsB, begMaxFIndices] = maxk(fBegSums, NUM_TO_TAKE);
 highestFBeg = f(begMaxFIndices);
 plot(highestFBeg, maxAmpsB, "om", LineStyle="none");
 highestFBeg = sort(highestFBeg);
 
-[maxAmpsE, endMaxFIndices] = maxk(fEndSums, num_to_take);
+[maxAmpsE, endMaxFIndices] = maxk(fEndSums, NUM_TO_TAKE);
 highestFEnd = f(endMaxFIndices);
 plot(highestFEnd, maxAmpsE, "om",LineStyle="none");
 highestFEnd = sort(highestFEnd);
@@ -149,9 +154,15 @@ for i = 1:size(highestFBeg, 1)
     end
 end
 
-c = vSound();
+% Calculate speed of sound based on temperature
+if isnumeric(TEMPERATURE)
+     c = vSound(TEMPERATURE);
+else
+     c = vSound();
+end
+
 fprintf("Speed of sound taken as %f m/s.\n", c);
-fprintf("Analyzing velocity based on highest %d means...\n", num_to_take);
+fprintf("Analyzing velocity based on highest %d means...\n", NUM_TO_TAKE);
 options = optimset('Display','off');
 for i = 1:size(highestFBeg, 1)
     velFcn = @(v) (c-v)*app(i) - (c+v)*rec(i);
@@ -161,7 +172,7 @@ for i = 1:size(highestFBeg, 1)
 end
 
 fprintf("Finding closest two velocities from the %d and averaging...\n", ...
-    num_to_take);
+    NUM_TO_TAKE);
 minDiffInd = find(abs(diff(sourceV))==min(abs(diff(sourceV))));
 % extract this index and its neighbor index
 v1 = sourceV(minDiffInd);
