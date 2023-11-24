@@ -1,7 +1,8 @@
 clc; clear all;
 trueV = NaN;
-matstring = "alternateanalysisroute.mat"; trueV = 50;
+% matstring = "alternateanalysisroute.mat"; trueV = 50;
 % matstring = "alternateanalysisroute56mph44F.mat"; trueV = 56;
+matstring = "alt40to50.mat";
 load(matstring);
 
 % conversion functions
@@ -20,7 +21,7 @@ end
 CUTOFF_VELOCITY_MPH = mps2mph(c); 
 
 % Additional cutoff if results make no sense
-CUTOFF_VELOCITY_MPH = 150; % reasonable for automobiles
+CUTOFF_VELOCITY_MPH = 100; % reasonable for automobiles
 
 % Minimum mean frequency amplitude prominence to be considered a peak
 % E.g. 0.5
@@ -28,7 +29,7 @@ MIN_FREQ_PROMINENCE = 0.5;
 
 % Minimum jump in velocity estimate curve to be considered a peak
 % E.g. 5
-MIN_DIFF_PROMINENCE = 5; %mph
+MIN_DIFF_PROMINENCE = 1; %mph
 
 
 % BEGIN 
@@ -96,7 +97,7 @@ end
 
 % Plot all (including negative) velocities
 figure(5); clf(5);
-stem(mps2mph(sourceV), "b");
+plot(mps2mph(sourceV), "b");
 hold on; yline(50, "r");
 ylabel("Velocity (MPH)");
 title(matstring);

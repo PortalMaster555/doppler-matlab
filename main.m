@@ -3,8 +3,11 @@ clear all;
 % audioFile = "horn.ogg";
 % audioFile = "test_10mps.wav";
 % audioFile = "test_440_48khz.wav";
-audioFile = "./audio/56mph44F.wav";
-
+% audioFile = "./audio/56mph44F.wav";
+% audioFile = "./audio/appx40to50.wav"; savename = "alt40to50.mat";
+% audioFile = "./audio/onecar/30kph.wav"; savename = "30kph.mat";
+% audioFile = "./audio/onecar/50kph.wav"; savename = "50kph.mat";
+audioFile = "./audio/onecar/70kph.wav"; savename = "70kph.mat";
 clc; printSplash();
 
 % CONSTANTS (tweak as needed)
@@ -98,7 +101,7 @@ tbeg = t(begRange); tend = t(endRange);
 %imagesc(tbeg, f, begAmps);
 %imagesc(tend, f, endAmps);
 
-save("alternateanalysisroute56mph44F");
+save(savename);
 
 % Weirdest part of the data analysis
 
