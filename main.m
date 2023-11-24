@@ -2,11 +2,14 @@ clc; clear all;
 % Conversion functions
 mps2mph = @(v) v * 2.237;
 mph2mps = @(v) v / 2.237;
+mph2kph = @(v) v * 1.609;
+kph2mph = @(v) v / 1.609;
+
 
 % CONSTANTS (tweak as needed)
 
-WINDOW_SIZE = 2048; %larger seems to work better, but the changepoint 
-                    % calculation hangs sometimes
+% Default: 2048 works well
+WINDOW_SIZE = 2048; 
 
 % Used to find the speed of sound, leave as NaN if unknown.                    
 TEMPERATURE_F = NaN; %F
@@ -14,15 +17,28 @@ TEMPERATURE_F = NaN; %F
 % Used to make comparisons, leave as NaN if unknown.   
 TRUE_V_MPH = NaN; % mph
 
-% audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
-% audioFile = "horn.ogg"; trueV = NaN;
-% audioFile = "test_10mps.wav";
-% audioFile = "test_440_48khz.wav";
+% These fit remarkably well!
+audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
+% audioFile = "./audio/appx40to50.wav"; TRUE_V_MPH = 45;
+    % Source estimate was approximately 40 to 50 mph, so within tolerance.
+    % Line drawn in the middle of the range
+% audioFile = "./audio/onecar/70kph.wav"; TRUE_V_MPH = kph2mph(70);
+% audioFile = "./audio/onecar/50kph.wav"; TRUE_V_MPH = kph2mph(50);
+    % Above seems to imply that the 50 is the wrong value (63kph instead???)
+
+% TO-DO: Make difference code find continuous regions AND lowest slope.
+% audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30); 
+
+% This one is okay, but without true value it is uncertain (curved "flat" area).
+% audioFile = "./audio/horn.ogg";
+
+% Incredibly low number of velocity estimates (quiet, almost no overtones!)
 % audioFile = "./audio/56mph44F.wav"; TRUE_V_MPH = 56; TEMPERATURE_F = 44; %F
-audioFile = "./audio/appx40to50.wav";
-% audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = 18.64;
-% audioFile = "./audio/onecar/50kph.wav"; TRUE_V_MPH = 31.07;
-% audioFile = "./audio/onecar/70kph.wav"; TRUE_V_MPH = 43.50;
+
+% These break everything (TO-DO: Patch the difference code to skip when only one vel.)
+% audioFile = "./audio/test_10mps.wav"; TRUE_V_MPH = mps2mph(10);
+% audioFile = "./audio/test_440_48khz.wav"; TRUE_V_MPH = 0;
+
 
 % Minimum mean frequency amplitude prominence to be considered a peak
 % E.g. 0.5
@@ -125,22 +141,27 @@ endRange = changeIndices(2):size(edges,2);
 figure(4); clf(4);
 subplot(2,1,1);
 imagesc(t(begRange), f, edges(:, begRange));
+title("Beginning Edge Detection");
 set(gca,'YDir','normal');
 subplot(2,1,2);
 imagesc(t(endRange), f, edges(:, endRange));
+title("End Edge Detection");
 set(gca,'YDir','normal');
 
 fprintf("Plotting beginning and end spectrograms...\n");
 % Plot beginning frequencies
 figure(11); clf(11);
+subplot(2,2,1);
 begFiltAmps = ampsStft(:,begRange);
-endFiltAmps = ampsStft(:,endRange);
 imagesc(t(begRange), f, begFiltAmps);
+title("Beginning Frequencies vs. Time");
 set(gca,'YDir','normal');
 
 % Plot end frequencies
-figure(12); clf(12);
+subplot(2,2,3);
+endFiltAmps = ampsStft(:,endRange);
 imagesc(t(endRange), f, endFiltAmps);
+title("End Frequencies vs. Time");
 set(gca,'YDir','normal');
 
 fprintf("Computing averages...\n");
@@ -149,15 +170,16 @@ begFreqAvgs = mean(begFiltAmps, 2);
 endFreqAvgs = mean(endFiltAmps, 2);
 
 % Plot the averages and the peaks
-figure(13); clf(13);
-subplot(2,1,1);
+subplot(2,2,2);
 stem(f, begFreqAvgs);
+title("Beginning Frequency Averages");
 xlim([0 0.5e4]);
 [pksBeg, locsBeg] = findpeaks(begFreqAvgs, MinPeakProminence=MIN_FREQ_PROMINENCE);
 
 
-subplot(2,1,2);
+subplot(2,2,4);
 stem(f, endFreqAvgs);
+title("End Frequency Averages");
 xlim([0 0.5e4]);
 [pksEnd, locsEnd] = findpeaks(endFreqAvgs, MinPeakProminence=MIN_FREQ_PROMINENCE);
 
@@ -166,11 +188,13 @@ xlim([0 0.5e4]);
 figure(14); clf(14);
 pltB = subplot(2,1,1);
 Ampa = begFreqAvgs(locsBeg);
-stem(f(locsBeg), Ampa)
+stem(f(locsBeg), Ampa);
+title("Highest Prominence Beginning Peaks");
 
 pltE = subplot(2,1,2);
 Ampr = endFreqAvgs(locsEnd);
-stem(f(locsEnd), Ampr)
+stem(f(locsEnd), Ampr);
+title("Highest Prominence End Peaks");
 
 fprintf("Constructing initial/final frequency pairs...\n");
 % Construct pairs for each combination of FREQUENCIES.
@@ -195,10 +219,9 @@ fprintf("Computed %d combinations of velocities.\n", size(sourceV,2));
 
 % Plot all (including negative) velocities
 figure(15); clf(15);
-plot(mps2mph(sourceV), "b");
-hold on; yline(50, "r");
+plot(mps2mph(sourceV), ".b");
 ylabel("Velocity (MPH)");
-title(audioFile);
+title("All Estimated Velocities");
 
 % Remove negative velocities (non-physical)
 possibleI = find(sourceV>=0);
@@ -210,7 +233,7 @@ figure(16); clf(16);
 % stem(mps2mph(sourceV), "b");
 plot(sortMphVels, ".b");
 ylabel("Velocity (MPH)");
-title(audioFile);
+title("All Positive Velocity Estimates");
 % saveas(gcf, "50mph.png");
 
 
@@ -224,6 +247,7 @@ diffVector = diff(sortMphVels);
 %plot
 findpeaks(diffVector, ...
     MinPeakProminence=MIN_DIFF_PROMINENCE);
+title("Velocity Estimate Difference Plot")
 
 fprintf("Estimating mean velocities...\n");
 % two point mean estimate
@@ -254,11 +278,17 @@ pairs = [pairs(indVec, 1) pairs(indVec, 2)];
 % Place additional arbitrary limitations here.
 
 pairsSort = flip(sortrows(pairs, 2));
-figure(16); hold on; yline(pairsSort(1,1), "m"); yline(TRUE_V_MPH, "r");
-legend("","Estimated V", "True V", Location="northwest");
+figure(16); hold on; yline(pairsSort(1,1), "m");
+if ~isnan(TRUE_V_MPH)
+     yline(TRUE_V_MPH, "r");
+     legend("","Estimated V", "True V", Location="northwest");
+else
+    legend("","Estimated V", Location="northwest");
+end
+
 
 fprintf("The most likely velocity of this object is %f mph.\n" + ...
-    "\t(%d contiguous entries, cutoff of %f mph.\n", ...
+    "\t(%d contiguous estimates, cutoff of %f mph.\n", ...
     pairsSort(1,1), pairsSort(1,2),  CUTOFF_VELOCITY_MPH);
 if ~isnan(TRUE_V_MPH)
     fprintf("This is %f mph ", abs(TRUE_V_MPH - pairsSort(1,1)))
@@ -267,9 +297,9 @@ if ~isnan(TRUE_V_MPH)
     else
         fprintf("below the true velocity, %f mph.\n", TRUE_V_MPH);
     end
-    fprintf("Possible velocities, contiguous entries, and distance from trueV:\n");
+    fprintf("Possible velocities, contiguous estimates and distance from trueV:\n");
     disp([pairsSort TRUE_V_MPH-pairsSort(:,1)]);
 else
-    fprintf("Possible velocities and contiguous entries:\n");
+    fprintf("Possible velocities and contiguous estimates:\n");
     disp(pairsSort);
 end
