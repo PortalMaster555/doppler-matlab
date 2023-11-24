@@ -17,7 +17,7 @@ TEMPERATURE_F = NaN; %F
 TRUE_V_MPH = NaN; % mph
 
 % These work remarkably well!
-audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
+% audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
 % audioFile = "./audio/appx40to50.wav"; TRUE_V_MPH = 45;
     % Source estimate was approximately 40 to 50 mph, so within tolerance.
     % Line drawn in the middle of the range
@@ -26,7 +26,7 @@ audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50;
     % Above seems to imply that the 50 is the wrong value (63kph instead???)
 
 % TO-DO: Make difference code find continuous regions AND lowest slope.
-% audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30); 
+audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30); 
 
 % This one is okay, but without true value it is uncertain (curved "flat" area).
 % audioFile = "./audio/horn.ogg";
@@ -237,70 +237,71 @@ title("All Positive Velocity Estimates");
 % saveas(gcf, "50mph.png");
 
 
+
 % EXTRACTING VELOCITY FROM THE CURVE
-fprintf("Finding differences in possible velocities...\n");
-% Find differences and peaks
-figure(17); clf(17);
-diffVector = diff(sortMphVels);
-[peakDiffs,peakDiffLocs] = findpeaks(diffVector, ...
-    MinPeakProminence=MIN_DIFF_PROMINENCE);
-%plot
-findpeaks(diffVector, ...
-    MinPeakProminence=MIN_DIFF_PROMINENCE);
-title("Velocity Estimate Difference Plot")
+% fprintf("Finding differences in possible velocities...\n");
+% % Find differences and peaks
+% figure(17); clf(17);
+% diffVector = diff(sortMphVels);
+% [peakDiffs,peakDiffLocs] = findpeaks(diffVector, ...
+%     MinPeakProminence=MIN_DIFF_PROMINENCE);
+% %plot
+% findpeaks(diffVector, ...
+%     MinPeakProminence=MIN_DIFF_PROMINENCE);
+% title("Velocity Estimate Difference Plot")
+% 
+% fprintf("Estimating mean velocities...\n");
+% % two point mean estimate
+% format short g
+% beforeVJumps = sortMphVels(peakDiffLocs);
+% afterVJumps = sortMphVels(peakDiffLocs+1);
+% 
+% dif = beforeVJumps(1);
+% meanV = 0 + dif/2;
+% for i = 1:size(beforeVJumps,2)-1
+%     dif(i+1) = beforeVJumps(i+1)-afterVJumps(i);
+%     meanV(i+1) = afterVJumps(i) + dif(i+1)/2;
+% end
+% 
+% %find horizontal span of the nonpeak regions
+% differenceArray = [0 peakDiffLocs];
+% for i = 1:size(differenceArray,2)-1
+%     horizDiffs(i) = differenceArray(i+1)-differenceArray(i);
+% end
+% 
+% pairs = [meanV; horizDiffs]';
 
-fprintf("Estimating mean velocities...\n");
-% two point mean estimate
-format short g
-beforeVJumps = sortMphVels(peakDiffLocs);
-afterVJumps = sortMphVels(peakDiffLocs+1);
-
-dif = beforeVJumps(1);
-meanV = 0 + dif/2;
-for i = 1:size(beforeVJumps,2)-1
-    dif(i+1) = beforeVJumps(i+1)-afterVJumps(i);
-    meanV(i+1) = afterVJumps(i) + dif(i+1)/2;
-end
-
-%find horizontal span of the nonpeak regions
-differenceArray = [0 peakDiffLocs];
-for i = 1:size(differenceArray,2)-1
-    horizDiffs(i) = differenceArray(i+1)-differenceArray(i);
-end
-
-pairs = [meanV; horizDiffs]';
-
-fprintf("Performing cutoff at %f mph...\n\n", CUTOFF_VELOCITY_MPH);
-% Perform cutoff checks
-indVec = pairs(:,1) < CUTOFF_VELOCITY_MPH;
-pairs = [pairs(indVec, 1) pairs(indVec, 2)];
+% fprintf("Performing cutoff at %f mph...\n\n", CUTOFF_VELOCITY_MPH);
+% % Perform cutoff checks
+% indVec = pairs(:,1) < CUTOFF_VELOCITY_MPH;
+% pairs = [pairs(indVec, 1) pairs(indVec, 2)];
 
 % Place additional arbitrary limitations here.
 
-pairsSort = flip(sortrows(pairs, 2));
-figure(16); hold on; yline(pairsSort(1,1), "m");
-if ~isnan(TRUE_V_MPH)
-     yline(TRUE_V_MPH, "r");
-     legend("","Estimated V", "True V", Location="northwest");
-else
-    legend("","Estimated V", Location="northwest");
-end
+% pairsSort = flip(sortrows(pairs, 2));
+% figure(16); hold on; yline(pairsSort(1,1), "m");
+% if ~isnan(TRUE_V_MPH)
+%      yline(TRUE_V_MPH, "r");
+%      legend("","Estimated V", "True V", Location="northwest");
+% else
+%     legend("","Estimated V", Location="northwest");
+% end
 
 
-fprintf("The most likely velocity of this object is %f mph.\n" + ...
-    "\t(%d contiguous estimates, cutoff of %f mph.\n", ...
-    pairsSort(1,1), pairsSort(1,2),  CUTOFF_VELOCITY_MPH);
-if ~isnan(TRUE_V_MPH)
-    fprintf("This is %f mph ", abs(TRUE_V_MPH - pairsSort(1,1)))
-    if TRUE_V_MPH - pairsSort(1,1) <= 0
-        fprintf("above the true velocity, %f mph.\n", TRUE_V_MPH);
-    else
-        fprintf("below the true velocity, %f mph.\n", TRUE_V_MPH);
-    end
-    fprintf("Possible velocities, contiguous estimates, and distance" + ...
-        " from the true velocity:\n");
-    disp([pairsSort TRUE_V_MPH-pairsSort(:,1)]);
-else
-    fprintf("Possible velocities and contiguous estimates:\n");
-    disp(pairsSort);
-end
+% fprintf("The most likely velocity of this object is %f mph.\n" + ...
+%     "\t(%d contiguous estimates, cutoff of %f mph.\n", ...
+%     pairsSort(1,1), pairsSort(1,2),  CUTOFF_VELOCITY_MPH);
+% if ~isnan(TRUE_V_MPH)
+%     fprintf("This is %f mph ", abs(TRUE_V_MPH - pairsSort(1,1)))
+%     if TRUE_V_MPH - pairsSort(1,1) <= 0
+%         fprintf("above the true velocity, %f mph.\n", TRUE_V_MPH);
+%     else
+%         fprintf("below the true velocity, %f mph.\n", TRUE_V_MPH);
+%     end
+%     fprintf("Possible velocities, contiguous estimates, and distance" + ...
+%         " from the true velocity:\n");
+%     disp([pairsSort TRUE_V_MPH-pairsSort(:,1)]);
+% else
+%     fprintf("Possible velocities and contiguous estimates:\n");
+%     disp(pairsSort);
+% end
