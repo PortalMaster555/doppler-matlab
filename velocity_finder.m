@@ -33,31 +33,27 @@ pltB = subplot(2,1,1);
 stem(f, begFreqAvgs);
 xlim([0 0.5e4]);
 [pksBeg, locsBeg] = findpeaks(begFreqAvgs, MinPeakProminence=MIN_PROMINENCE);
-Fa = begFreqAvgs(locsBeg);
+
 
 pltE = subplot(2,1,2);
 stem(f, endFreqAvgs);
 xlim([0 0.5e4]);
 [pksEnd, locsEnd] = findpeaks(endFreqAvgs, MinPeakProminence=MIN_PROMINENCE);
-Fr = endFreqAvgs(locsEnd);
 
 % Plot the highest prominence peaks on charts for reference
 
 figure(4); clf(4);
 pltB = subplot(2,1,1);
-findpeaks(begFreqAvgs, MinPeakProminence=MIN_PROMINENCE);
+Ampa = begFreqAvgs(locsBeg);
+stem(f(locsBeg), Ampa)
 
 pltE = subplot(2,1,2);
-findpeaks(endFreqAvgs, MinPeakProminence=MIN_PROMINENCE);
+Ampr = endFreqAvgs(locsEnd);
+stem(f(locsEnd), Ampr)
 
-figure(5); clf(5);
-pltB = subplot(2,1,1);
-stem(f(locsBeg), Fa);
-pltE = subplot(2,1,2);
-stem(f(locsEnd), Fr);
-
-% Construct pairs for each combination.
-
+% Construct pairs for each combination of FREQUENCIES.
+Fa = f(locsBeg);
+Fr = f(locsEnd);
 % columns are F_a
 [FaM, FrM] = ndgrid(Fa, Fr);
 % straighten out into columns and merge into an Nx2 matrix
@@ -86,7 +82,6 @@ mph2mps = @(v) v / 2.237;
 
 % Plot all (including negative) velocities
 figure(6); clf(6);
-subplot(2,1,1);
 stem(mps2mph(sourceV), "b");
 hold on; yline(50, "r");
 ylabel("Velocity (MPH)");
@@ -97,36 +92,10 @@ possibleI = find(sourceV>=0);
 sourceV = sourceV(possibleI);
 
 % Plot all possible velocities
-subplot(2,1,2);
+figure(7); clf(7);
 stem(mps2mph(sourceV), "b");
 stem(mps2mph(sort(sourceV)), "b");
-hold on; yline(50, "r");
+hold on; yline(56, "r");
 ylabel("Velocity (MPH)");
 title(matstring);
-% figure(7); clf(7);
-% plot(diff(mps2mph(sort(sourceV))));
-
-%
-%
-%
-
-% Pair each beginning frequency with the closest end frequency below it
-% Repeats are allowed
-
-for i = 1:size(highestFBeg, 1)
-    ind = find(highestFEnd <= highestFBeg(i,1));
-    % fprintf("highestVal: %f\n", highestFBeg(i));
-    % fprintf("correspondingEnd: %f\n\n", highestFEnd(ind(end)));
-    if isempty(ind)
-        %Fixes cases where there is no lower end value than a beginning
-        %value (sets beginning and end equal, so v=0)
-        app(i) = highestFBeg(i);
-        rec(i) = highestFBeg(i);
-    else
-        app(i) = highestFBeg(i);
-        rec(i) = highestFEnd(ind(end));
-    end
-end
-
-
-
+% saveas(gcf, "50mph.png");
