@@ -92,10 +92,37 @@ possibleI = find(sourceV>=0);
 sourceV = sourceV(possibleI);
 
 % Plot all possible velocities
+sortMphVels = mps2mph(sort(sourceV));
 figure(7); clf(7);
-stem(mps2mph(sourceV), "b");
-stem(mps2mph(sort(sourceV)), "b");
+% stem(mps2mph(sourceV), "b");
+stem(sortMphVels, "b");
 hold on; yline(56, "r");
 ylabel("Velocity (MPH)");
 title(matstring);
 % saveas(gcf, "50mph.png");
+
+% EXTRACTING VELOCITY FROM THE CURVE
+
+% Find differences and peaks
+figure(8); clf(8);
+diffVector = diff(sortMphVels);
+MIN_DIFF_PROMINENCE = 5; %mph
+[peakDiffs,peakDiffLocs] = findpeaks(diffVector, ...
+    MinPeakProminence=MIN_DIFF_PROMINENCE);
+% Plot
+findpeaks(diffVector, MinPeakProminence=MIN_DIFF_PROMINENCE);
+hold on;
+title("Differences between estimates")
+ylabel("Difference (MPH)");
+
+% plot the connected valleys
+diffVector;
+diffVector(peakDiffLocs) = "DELIM";
+plot(diffVector, ".r");
+clear diffVector;
+
+
+
+
+
+
