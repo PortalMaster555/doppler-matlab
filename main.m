@@ -1,9 +1,9 @@
 clear all;
-audioFile = "./audio/50mphobserver.wav";
+% audioFile = "./audio/50mphobserver.wav";
 % audioFile = "horn.ogg";
 % audioFile = "test_10mps.wav";
 % audioFile = "test_440_48khz.wav";
-% audioFile = "56mph44F.wav";
+audioFile = "./audio/56mph44F.wav";
 
 clc; printSplash();
 
@@ -13,8 +13,8 @@ clc; printSplash();
 
 WINDOW_SIZE = 2048; %larger seems to work better, but the changepoint 
                     % calculation hangs sometimes
-TEMPERATURE = "UNKNOWN";
-% TEMPERATURE = 44; %F
+% TEMPERATURE = "UNKNOWN";
+TEMPERATURE = 44; %F
 % smoothingConstant = 10;
 
 
@@ -98,7 +98,7 @@ tbeg = t(begRange); tend = t(endRange);
 %imagesc(tbeg, f, begAmps);
 %imagesc(tend, f, endAmps);
 
-save("alternateanalysisroute");
+save("alternateanalysisroute56mph44F");
 
 % Weirdest part of the data analysis
 
