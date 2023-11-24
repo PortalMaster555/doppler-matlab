@@ -43,7 +43,7 @@ set(gca,'YDir','normal');
 
 % Plot end frequencies
 figure(2); clf(2);
-imagesc(tbeg, f, endFiltAmps);
+imagesc(tend, f, endFiltAmps);
 set(gca,'YDir','normal');
 
 % Find the averages for each frequency section
@@ -53,13 +53,13 @@ endFreqAvgs = mean(endFiltAmps, 2);
 % Plot the averages and the peaks
 
 figure(3); clf(3);
-pltB = subplot(2,1,1);
+subplot(2,1,1);
 stem(f, begFreqAvgs);
 xlim([0 0.5e4]);
 [pksBeg, locsBeg] = findpeaks(begFreqAvgs, MinPeakProminence=MIN_FREQ_PROMINENCE);
 
 
-pltE = subplot(2,1,2);
+subplot(2,1,2);
 stem(f, endFreqAvgs);
 xlim([0 0.5e4]);
 [pksEnd, locsEnd] = findpeaks(endFreqAvgs, MinPeakProminence=MIN_FREQ_PROMINENCE);
@@ -171,5 +171,5 @@ if ~isnan(trueV)
     disp([pairsSort trueV-pairsSort(:,1)]);
 else
     fprintf("Possible velocities and contiguous entries:\n");
-    disp([pairsSort]);
+    disp(pairsSort);
 end
