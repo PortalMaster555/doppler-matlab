@@ -6,6 +6,7 @@ fprintf("| | | |___  _ __  _ __ | | ___ _ __ \n");
 fprintf("| | | / _ \\| '_ \\| '_ \\| |/ _ | '__|\n");
 fprintf("| |/ | (_) | |_) | |_) | |  __| |   \n");
 fprintf("|___/ \\___/| .__/| .__/|_|\\___|_|   \n");
-%fprintf("           | |   | |                \n");
+% fprintf("           | |   | |                \n"); 
+% it honestly looks better without this
 fprintf("           |_|   |_|                \n");
 end

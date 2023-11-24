@@ -5,10 +5,9 @@ mph2mps = @(v) v / 2.237;
 mph2kph = @(v) v * 1.609;
 kph2mph = @(v) v / 1.609;
 
-
 % CONSTANTS (tweak as needed)
 
-% Default: 2048 works well
+% Short-time Fourier transform window size: 2048 works well
 WINDOW_SIZE = 2048; 
 
 % Used to find the speed of sound, leave as NaN if unknown.                    
@@ -17,7 +16,7 @@ TEMPERATURE_F = NaN; %F
 % Used to make comparisons, leave as NaN if unknown.   
 TRUE_V_MPH = NaN; % mph
 
-% These fit remarkably well!
+% These work remarkably well!
 audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
 % audioFile = "./audio/appx40to50.wav"; TRUE_V_MPH = 45;
     % Source estimate was approximately 40 to 50 mph, so within tolerance.
@@ -74,8 +73,9 @@ printSplash();
 
 [amps, Fs] = audioread(audioFile);
 N = size(amps,1); % number of samples
-fprintf("Audio file loaded: %s (length %d samples)\n", audioFile, N);
-fprintf("Maximum detectable frequency at or just below  %f Hz\n", Fs/2);
+fprintf("Audio file loaded: %s\n", audioFile);
+fprintf("Sample rate: %d Hz\nLength: %d samples\n", Fs, N);
+fprintf("Maximum detectable frequency at or just below %f Hz.\n\n", Fs/2);
 
 % Comment if playback not needed
 playAudio(amps, Fs, 2);
@@ -270,7 +270,7 @@ end
 
 pairs = [meanV; horizDiffs]';
 
-fprintf("Performing cutoff at %f mph...\n", CUTOFF_VELOCITY_MPH);
+fprintf("Performing cutoff at %f mph...\n\n", CUTOFF_VELOCITY_MPH);
 % Perform cutoff checks
 indVec = pairs(:,1) < CUTOFF_VELOCITY_MPH;
 pairs = [pairs(indVec, 1) pairs(indVec, 2)];
@@ -297,7 +297,8 @@ if ~isnan(TRUE_V_MPH)
     else
         fprintf("below the true velocity, %f mph.\n", TRUE_V_MPH);
     end
-    fprintf("Possible velocities, contiguous estimates and distance from trueV:\n");
+    fprintf("Possible velocities, contiguous estimates, and distance" + ...
+        " from the true velocity:\n");
     disp([pairsSort TRUE_V_MPH-pairsSort(:,1)]);
 else
     fprintf("Possible velocities and contiguous estimates:\n");
