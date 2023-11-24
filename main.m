@@ -236,7 +236,7 @@ ylabel("Velocity (MPH)");
 title("All Positive Velocity Estimates");
 % saveas(gcf, "50mph.png");
 
-
+save("yetanothertest.mat");
 
 % EXTRACTING VELOCITY FROM THE CURVE
 % fprintf("Finding differences in possible velocities...\n");
