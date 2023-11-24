@@ -1,7 +1,7 @@
 clc; clear all;
 trueV = NaN;
-% matstring = "alternateanalysisroute.mat"; trueV = 50;
-matstring = "alternateanalysisroute56mph44F.mat"; trueV = 56;
+matstring = "alternateanalysisroute.mat"; trueV = 50;
+% matstring = "alternateanalysisroute56mph44F.mat"; trueV = 56;
 load(matstring);
 
 % conversion functions
@@ -28,7 +28,7 @@ MIN_FREQ_PROMINENCE = 0.5;
 
 % Minimum jump in velocity estimate curve to be considered a peak
 % E.g. 5
-MIN_DIFF_PROMINENCE = 10; %mph
+MIN_DIFF_PROMINENCE = 5; %mph
 
 
 % BEGIN 
@@ -38,13 +38,11 @@ figure(1); clf(1);
 begFiltAmps = filteredAmps(:,begRange);
 endFiltAmps = filteredAmps(:,endRange);
 imagesc(tbeg, f, begFiltAmps);
-ylim([0 4000]);
 set(gca,'YDir','normal');
 
 % Plot end frequencies
 figure(2); clf(2);
 imagesc(tbeg, f, endFiltAmps);
-ylim([0 4000]);
 set(gca,'YDir','normal');
 
 % Find the averages for each frequency section
