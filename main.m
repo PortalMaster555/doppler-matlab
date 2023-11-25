@@ -148,22 +148,9 @@ xline(endT, "r", LineWidth=1);
 % xline(beginT, "r", LineWidth=1);
 % xline(endT, "r", LineWidth=1);
 
-fprintf("Detecting edges...\n");
-edges = edge(ampsStft, 'Canny');
-
 % Isolate ends (outside of the middle transition)
 begRange = 1:changeIndices(1);
-endRange = changeIndices(2):size(edges,2);
-
-figure(4); clf(4);
-subplot(2,1,1);
-imagesc(t(begRange), f, edges(:, begRange));
-title("Beginning Edge Detection");
-set(gca,'YDir','normal');
-subplot(2,1,2);
-imagesc(t(endRange), f, edges(:, endRange));
-title("End Edge Detection");
-set(gca,'YDir','normal');
+endRange = changeIndices(2):size(ampsStft,2);
 
 fprintf("Plotting beginning and end spectrograms...\n");
 % Plot beginning frequencies
