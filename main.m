@@ -236,49 +236,70 @@ ylabel("Velocity (MPH)");
 title("All Positive Velocity Estimates");
 % saveas(gcf, "50mph.png");
 
-save("yetanothertest.mat");
-
 % EXTRACTING VELOCITY FROM THE CURVE
-% fprintf("Finding differences in possible velocities...\n");
-% % Find differences and peaks
-% figure(17); clf(17);
-% diffVector = diff(sortMphVels);
-% [peakDiffs,peakDiffLocs] = findpeaks(diffVector, ...
-%     MinPeakProminence=MIN_DIFF_PROMINENCE);
-% %plot
-% findpeaks(diffVector, ...
-%     MinPeakProminence=MIN_DIFF_PROMINENCE);
-% title("Velocity Estimate Difference Plot")
-% 
-% fprintf("Estimating mean velocities...\n");
-% % two point mean estimate
-% format short g
-% beforeVJumps = sortMphVels(peakDiffLocs);
-% afterVJumps = sortMphVels(peakDiffLocs+1);
-% 
-% dif = beforeVJumps(1);
-% meanV = 0 + dif/2;
-% for i = 1:size(beforeVJumps,2)-1
-%     dif(i+1) = beforeVJumps(i+1)-afterVJumps(i);
-%     meanV(i+1) = afterVJumps(i) + dif(i+1)/2;
-% end
-% 
-% %find horizontal span of the nonpeak regions
-% differenceArray = [0 peakDiffLocs];
-% for i = 1:size(differenceArray,2)-1
-%     horizDiffs(i) = differenceArray(i+1)-differenceArray(i);
-% end
-% 
-% pairs = [meanV; horizDiffs]';
 
-% fprintf("Performing cutoff at %f mph...\n\n", CUTOFF_VELOCITY_MPH);
-% % Perform cutoff checks
-% indVec = pairs(:,1) < CUTOFF_VELOCITY_MPH;
-% pairs = [pairs(indVec, 1) pairs(indVec, 2)];
+fprintf("Calculating gradient of velocity estimate curve...\n");
+figure(21); clf(21);
+gradVels = gradient(sortMphVels);
+plot(gradVels, "-r");
+title("Gradient of the possible velocity curve");
+ylabel("Point-to-Point Change in Velocity");
 
-% Place additional arbitrary limitations here.
+fprintf("Calculating peaks of gradient of velocity estimate curve...\n");
+figure(22); clf(22);
+[gradPeaks, gradPeakLocs] = findpeaks(gradVels, ...
+    MinPeakProminence=MIN_DIFF_PROMINENCE);
+% Plot
+findpeaks(gradVels, MinPeakProminence=MIN_DIFF_PROMINENCE);
+title("Peaks of the gradient of the possible velocity curve");
 
-% pairsSort = flip(sortrows(pairs, 2));
+% Idea: Sum of the points in the regions between peaks
+%       should be close to 0 for the region to be FLAT.
+
+figure(16);
+hold on;
+yline(sortMphVels(gradPeakLocs));
+
+fprintf("Calculating flattest region on curve...\n");
+% The most overcomplicated method for what is probably just a mean ever
+regionCounter = 1;
+regionSum = 0;
+regionLength = 1;
+for i = 2:size(sortMphVels, 2)
+    % If still part of the current region
+    if ~any(i == gradPeakLocs)
+        regionSum(regionCounter) = regionSum(regionCounter) + gradVels(i);
+        regionLength(regionCounter) = regionLength(regionCounter) + 1;
+    else %if peak (new region)
+        regionCounter = regionCounter + 1;
+        % for some reason it doesn't want to expand the array itself
+        regionSum = [regionSum 0];
+        regionLength(regionCounter) = 1;
+        % add first peak to the new region
+        regionSum(regionCounter) = regionSum(regionCounter) + gradVels(i);
+    end
+end
+
+regionPairs = [regionSum; regionLength]';
+% Effectively a measure of flatness per length?
+regionMeans = regionSum ./ regionLength;
+[lowestMean, lowestRegionIndex] = min(regionMeans);
+textLocs = [0 gradPeakLocs];
+% text(textLocs, regionSum(textLocs));
+
+fprintf("Finding all velocity estimates in region...\n");
+% First point in the region
+beginningIndex = sum(regionLength(1:lowestRegionIndex-1)) + 1;
+% Last point in the region
+endingIndex = sum(regionLength(1:lowestRegionIndex));
+xline(beginningIndex, "r");
+xline(endingIndex, "r");
+
+velEstimates = sortMphVels(beginningIndex:endingIndex);
+
+finalVelocityEstimate = mean(velEstimates);
+fprintf("Final velocity estimate is %f mph.\n", finalVelocityEstimate);
+
 % figure(16); hold on; yline(pairsSort(1,1), "m");
 % if ~isnan(TRUE_V_MPH)
 %      yline(TRUE_V_MPH, "r");
