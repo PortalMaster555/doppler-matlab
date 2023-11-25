@@ -371,5 +371,5 @@ if ~isnan(TRUE_V_MPH)
     else
         fprintf("below the true velocity, %f mph.\n", TRUE_V_MPH);
     end
-    fprintf("Percentage error: %f%%\n", (finalVelEst-TRUE_V_MPH)/TRUE_V_MPH)
+    fprintf("Percentage error: %f%%\n", 100*(finalVelEst-TRUE_V_MPH)/TRUE_V_MPH)
 end

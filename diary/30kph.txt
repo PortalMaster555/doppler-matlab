@@ -26,4 +26,4 @@ Finding all velocity estimates in region...
 
 Final velocity estimate is 18.973034 mph. (30.527612 km/h, 8.481464 m/s)
 This is 0.327913 mph above the true velocity, 18.645121 mph.
-Percentage error: 0.017587%
+Percentage error: 1.758707%
