@@ -16,29 +16,6 @@ TEMPERATURE_F = NaN; %F
 % Used to make comparisons, leave as NaN if unknown.   
 TRUE_V_MPH = NaN; % mph
 
-% These work remarkably well!
-audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
-% audioFile = "./audio/appx40to50.wav"; TRUE_V_MPH = 45;
-    % Source estimate was approximately 40 to 50 mph, so within tolerance.
-    % Line drawn in the middle of the range
-% audioFile = "./audio/onecar/70kph.wav"; TRUE_V_MPH = kph2mph(70);
-% audioFile = "./audio/onecar/50kph.wav"; TRUE_V_MPH = kph2mph(50);
-    % Above seems to imply that the 50 is the wrong value (63kph instead???)
-
-% TO-DO: Make difference code find continuous regions AND lowest slope.
-% audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30); 
-
-% This one is okay, but without true value it is uncertain (curved "flat" area).
-% audioFile = "./audio/horn.ogg";
-
-% Incredibly low number of velocity estimates (quiet, almost no overtones!)
-% audioFile = "./audio/56mph44F.wav"; TRUE_V_MPH = 56; TEMPERATURE_F = 44; %F
-
-% These break everything (TO-DO: Patch the difference code to skip when only one vel.)
-% audioFile = "./audio/test_10mps.wav"; TRUE_V_MPH = mps2mph(10);
-% audioFile = "./audio/test_440_48khz.wav"; TRUE_V_MPH = 0;
-
-
 % Minimum mean frequency amplitude prominence to be considered a peak
 % E.g. 0.5
 MIN_FREQ_PROMINENCE = 0.5;
@@ -46,6 +23,46 @@ MIN_FREQ_PROMINENCE = 0.5;
 % Minimum jump in velocity estimate curve to be considered a peak
 % E.g. 5 (may need to be tweaked based on available sample data)
 MIN_DIFF_PROMINENCE = 1; %mph
+
+% Set to 1 to interpolate, 0 to use original velocity estimate curve.
+interp_flag = 1;
+% Multiplies number of points. Be careful for files with many tones!
+% Minimum of 1 should be used.
+INTERPOLATION_VALUE = 1;
+
+% Set to 1 to smooth, 0 to use original gradient curve.
+smooth_flag = 0;
+
+
+% audioFile = "./audio/onecar/70kph.wav"; TRUE_V_MPH = kph2mph(70);
+% audioFile = "./audio/onecar/50kph.wav"; TRUE_V_MPH = kph2mph(50);
+    % Above seems to imply that the 50 is the wrong value (64kph instead???)
+audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30);
+
+% audioFile = "./audio/appx40to50.wav"; TRUE_V_MPH = 45;
+    % Source estimate was approximately 40 to 50 mph, so acceptable.
+    % Line drawn in the middle of the range
+
+% Requires cutoff and interpolation
+% audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
+% INTERPOLATION_VALUE = 10;
+
+% Slightly inaccurate; overtones actually help the program
+% audioFile = "./audio/test_10mps.wav"; TRUE_V_MPH = mps2mph(10);
+% interp_flag = 0;
+
+% I would have been surprised if this were anything but 0.
+% audioFile = "./audio/test_440_48khz.wav"; TRUE_V_MPH = 0;
+
+
+% BROKEN
+% Incredibly low number of velocity estimates;
+% audioFile = "./audio/56mph44F.wav"; 
+% TRUE_V_MPH = 56; TEMPERATURE_F = 44; INTERPOLATION_VALUE = 10;
+
+% Likely requires a lower limit (true velocity not 0, may be ~20 mph)
+% audioFile = "./audio/horn.ogg";
+
 
 % Calculate speed of sound based on temperature
 if ~isnan(TEMPERATURE_F)
@@ -59,7 +76,7 @@ CUTOFF_VELOCITY_MPH = mps2mph(C);
 
 % Additional cutoff if results make no sense
 % 100 mph reasonable for automobiles
-CUTOFF_VELOCITY_MPH = 100;
+CUTOFF_VELOCITY_MPH = 150;
 
 
 %
@@ -131,22 +148,9 @@ xline(endT, "r", LineWidth=1);
 % xline(beginT, "r", LineWidth=1);
 % xline(endT, "r", LineWidth=1);
 
-fprintf("Detecting edges...\n");
-edges = edge(ampsStft, 'Canny');
-
 % Isolate ends (outside of the middle transition)
 begRange = 1:changeIndices(1);
-endRange = changeIndices(2):size(edges,2);
-
-figure(4); clf(4);
-subplot(2,1,1);
-imagesc(t(begRange), f, edges(:, begRange));
-title("Beginning Edge Detection");
-set(gca,'YDir','normal');
-subplot(2,1,2);
-imagesc(t(endRange), f, edges(:, endRange));
-title("End Edge Detection");
-set(gca,'YDir','normal');
+endRange = changeIndices(2):size(ampsStft,2);
 
 fprintf("Plotting beginning and end spectrograms...\n");
 % Plot beginning frequencies
@@ -227,80 +231,132 @@ title("All Estimated Velocities");
 possibleI = find(sourceV>=0);
 sourceV = sourceV(possibleI);
 
-% Plot all possible velocities
+% sort list of velocities
 sortMphVels = mps2mph(sort(sourceV));
 figure(16); clf(16);
 % stem(mps2mph(sourceV), "b");
 plot(sortMphVels, ".b");
 ylabel("Velocity (MPH)");
 title("All Positive Velocity Estimates");
-% saveas(gcf, "50mph.png");
 
-
-% EXTRACTING VELOCITY FROM THE CURVE
-fprintf("Finding differences in possible velocities...\n");
-% Find differences and peaks
-figure(17); clf(17);
-diffVector = diff(sortMphVels);
-[peakDiffs,peakDiffLocs] = findpeaks(diffVector, ...
-    MinPeakProminence=MIN_DIFF_PROMINENCE);
-%plot
-findpeaks(diffVector, ...
-    MinPeakProminence=MIN_DIFF_PROMINENCE);
-title("Velocity Estimate Difference Plot")
-
-fprintf("Estimating mean velocities...\n");
-% two point mean estimate
-format short g
-beforeVJumps = sortMphVels(peakDiffLocs);
-afterVJumps = sortMphVels(peakDiffLocs+1);
-
-dif = beforeVJumps(1);
-meanV = 0 + dif/2;
-for i = 1:size(beforeVJumps,2)-1
-    dif(i+1) = beforeVJumps(i+1)-afterVJumps(i);
-    meanV(i+1) = afterVJumps(i) + dif(i+1)/2;
-end
-
-%find horizontal span of the nonpeak regions
-differenceArray = [0 peakDiffLocs];
-for i = 1:size(differenceArray,2)-1
-    horizDiffs(i) = differenceArray(i+1)-differenceArray(i);
-end
-
-pairs = [meanV; horizDiffs]';
-
-fprintf("Performing cutoff at %f mph...\n\n", CUTOFF_VELOCITY_MPH);
-% Perform cutoff checks
-indVec = pairs(:,1) < CUTOFF_VELOCITY_MPH;
-pairs = [pairs(indVec, 1) pairs(indVec, 2)];
-
-% Place additional arbitrary limitations here.
-
-pairsSort = flip(sortrows(pairs, 2));
-figure(16); hold on; yline(pairsSort(1,1), "m");
-if ~isnan(TRUE_V_MPH)
-     yline(TRUE_V_MPH, "r");
-     legend("","Estimated V", "True V", Location="northwest");
+if size(sortMphVels, 2) == 1
+    finalVelEst = sortMphVels(1,1);
 else
-    legend("","Estimated V", Location="northwest");
+    if interp_flag
+        % defines additional precision
+        step = 1/INTERPOLATION_VALUE;
+        xq = 0:step:size(sortMphVels, 2);
+        sortMphVels = interp1(sortMphVels, xq);
+        plot(sortMphVels, ".r");
+    end
+    
+    % saveas(gcf, "50mph.png");
+    
+    % Apply cutoff (does this need to happen later?)
+    sortMphVels = sortMphVels(sortMphVels < CUTOFF_VELOCITY_MPH);
+    hold on;
+    
+    % EXTRACTING VELOCITY FROM THE CURVE
+    
+    fprintf("Calculating gradient of velocity estimate curve...\n");
+    figure(21); clf(21);
+    gradVels = gradient(sortMphVels);
+    
+    plot(gradVels, "--r");
+    hold on;
+    title("Gradient of the possible velocity curve");
+    ylabel("Point-to-Point Change in Velocity");
+    
+    % if smooth_flag
+    %     gradVels = smoothdata(gradVels);
+    %     plot(gradVels, "-b");
+    % end
+    
+    fprintf("Calculating peaks of gradient of velocity estimate curve...\n");
+    figure(22); clf(22);
+    [gradPeaks, gradPeakLocs] = findpeaks(gradVels, ...
+        MinPeakProminence=MIN_DIFF_PROMINENCE);
+    % Plot
+    findpeaks(gradVels, MinPeakProminence=MIN_DIFF_PROMINENCE);
+    title("Peaks of the gradient of the possible velocity curve");
+    
+    % Idea: Sum of the points in the regions between peaks
+    %       should be close to 0 for the region to be FLAT.
+    
+    
+    
+    figure(16);
+    hold on;
+    yline(sortMphVels(gradPeakLocs), "--k");
+    
+    fprintf("Calculating flattest region on curve...\n");
+    % The most overcomplicated method for what is probably just a mean ever
+    regionCounter = 1;
+    regionSum = 0;
+    regionLength = 1;
+    for i = 2:size(sortMphVels, 2)
+        % If still part of the current region
+        if ~any(i == gradPeakLocs)
+            regionSum(regionCounter) = regionSum(regionCounter) + gradVels(i);
+            regionLength(regionCounter) = regionLength(regionCounter) + 1;
+        else %if peak (new region)
+            regionCounter = regionCounter + 1;
+            % for some reason it doesn't want to expand the array itself
+            regionSum = [regionSum 0];
+            regionLength(regionCounter) = 1;
+            % add first peak to the new region
+            regionSum(regionCounter) = regionSum(regionCounter) + gradVels(i);
+        end
+    end
+    
+    regionPairs = [regionSum; regionLength]';
+    % Effectively a measure of flatness per length?
+    regionMeans = regionSum ./ regionLength;
+    [lowestMean, lowestRegionIndex] = min(regionMeans);
+    textLocs = [0 gradPeakLocs];
+    % text(textLocs, regionSum(textLocs));
+    
+    fprintf("Finding all velocity estimates in region...\n");
+    % First point in the region
+    beginningIndex = sum(regionLength(1:lowestRegionIndex-1)) + 1;
+    % Last point in the region
+    endingIndex = sum(regionLength(1:lowestRegionIndex));
+    xline(beginningIndex, "--r", DisplayName="");
+    xline(endingIndex, "--r", DisplayName="");
+    
+    % Find final estimate
+    velEstimates = sortMphVels(beginningIndex:endingIndex);
+    finalVelEst = mean(velEstimates);
 end
+% Draw some lines
+estLine = yline(finalVelEst, "b");
+cutLine = yline(CUTOFF_VELOCITY_MPH, "m");
+l = legend([estLine, cutLine], "Estimate", "Cutoff");
+l.Direction = "reverse";
+l.Location = "northwest";
+
+fprintf("\nFinal velocity estimate is %f mph. (%f km/h, %f m/s)\n" ...
+    , finalVelEst, mph2kph(finalVelEst), mph2mps(finalVelEst));
+
+% figure(16); hold on; yline(pairsSort(1,1), "m");
+% if ~isnan(TRUE_V_MPH)
+%      yline(TRUE_V_MPH, "r");
+%      legend("","Estimated V", "True V", Location="northwest");
+% else
+%     legend("","Estimated V", Location="northwest");
+% end
 
 
-fprintf("The most likely velocity of this object is %f mph.\n" + ...
-    "\t(%d contiguous estimates, cutoff of %f mph.\n", ...
-    pairsSort(1,1), pairsSort(1,2),  CUTOFF_VELOCITY_MPH);
+% fprintf("The most likely velocity of this object is %f mph.\n" + ...
+%     "\t(%d contiguous estimates, cutoff of %f mph.\n", ...
+%     pairsSort(1,1), pairsSort(1,2),  CUTOFF_VELOCITY_MPH);
+
 if ~isnan(TRUE_V_MPH)
-    fprintf("This is %f mph ", abs(TRUE_V_MPH - pairsSort(1,1)))
-    if TRUE_V_MPH - pairsSort(1,1) <= 0
+    fprintf("This is %f mph ", abs(TRUE_V_MPH - finalVelEst))
+    if TRUE_V_MPH - finalVelEst <= 0
         fprintf("above the true velocity, %f mph.\n", TRUE_V_MPH);
     else
         fprintf("below the true velocity, %f mph.\n", TRUE_V_MPH);
     end
-    fprintf("Possible velocities, contiguous estimates, and distance" + ...
-        " from the true velocity:\n");
-    disp([pairsSort TRUE_V_MPH-pairsSort(:,1)]);
-else
-    fprintf("Possible velocities and contiguous estimates:\n");
-    disp(pairsSort);
+    fprintf("Percentage error: %f%%\n", 100*(finalVelEst-TRUE_V_MPH)/TRUE_V_MPH)
 end
