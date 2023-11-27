@@ -76,7 +76,7 @@ CUTOFF_VELOCITY_MPH = mps2mph(C);
 
 % Additional cutoff if results make no sense
 % 100 mph reasonable for automobiles
-CUTOFF_VELOCITY_MPH = 150;
+% CUTOFF_VELOCITY_MPH = 150;
 
 
 %
@@ -253,6 +253,7 @@ else
     % saveas(gcf, "50mph.png");
     
     % Apply cutoff (does this need to happen later?)
+    fprintf("Applying cutoff value of %f mph\n", CUTOFF_VELOCITY_MPH);
     sortMphVels = sortMphVels(sortMphVels < CUTOFF_VELOCITY_MPH);
     hold on;
     

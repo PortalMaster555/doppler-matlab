@@ -1,12 +1,11 @@
 function printSplash()
 %PRINTSPLASH Prints a splash screen (very important)
-fprintf("______                  _           \n");
-fprintf("|  _  \\                | |          \n");
-fprintf("| | | |___  _ __  _ __ | | ___ _ __ \n");
-fprintf("| | | / _ \\| '_ \\| '_ \\| |/ _ | '__|\n");
-fprintf("| |/ | (_) | |_) | |_) | |  __| |   \n");
-fprintf("|___/ \\___/| .__/| .__/|_|\\___|_|   \n");
-% fprintf("           | |   | |                \n"); 
-% it honestly looks better without this
-fprintf("           |_|   |_|                \n");
+fprintf(" ______                             _____          _       ______    \n");
+fprintf("|_   _ `.                          |_   _|        / \\     |_   _ \\   \n");
+fprintf("  | | `. \\  .--.   _ .--.   _ .--.   | |         / _ \\      | |_) |  \n");
+fprintf("  | |  | |/ .'`\\ \\[ '/'`\\ \\[ '/'`\\ \\ | |   _    / ___ \\     |  __'.  \n");
+fprintf(" _| |_.' /| \\__. | | \\__/ | | \\__/ |_| |__/ | _/ /   \\ \\_  _| |__) | \n");
+fprintf("|______.'  '.__.'  | ;.__/  | ;.__/|________||____| |____||_______/  \n");
+fprintf("                  [__|     [__|                                      \n");
 end
+% http://www.patorjk.com/software/taag/#p=author&f=Varsity&t=DoppLAB

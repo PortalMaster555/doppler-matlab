@@ -1,0 +1,19 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: DoppLAB
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Devin
+    family-names: Springborn
+    affiliation: The University of Texas at Dallas
+repository-code: 'https://github.com/PortalMaster555/doppler-matlab'
+abstract: >-
+  DoppLAB is a MATLAB script which calculates the velocity
+  of a moving object based on the sound observed as it
+  passes.
+license: AGPL-3.0
