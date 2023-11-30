@@ -1,4 +1,5 @@
-clc; clear all;
+%clc; clear all;
+
 % Conversion functions
 mps2mph = @(v) v * 2.237;
 mph2mps = @(v) v / 2.237;
@@ -36,16 +37,18 @@ smooth_flag = 0;
 
 % audioFile = "./audio/onecar/70kph.wav"; TRUE_V_MPH = kph2mph(70);
 % audioFile = "./audio/onecar/50kph.wav"; TRUE_V_MPH = kph2mph(50);
-    % Above seems to imply that the 50 is the wrong value (64kph instead???)
-audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30);
+    % Latches onto the wrong value without
+% INTERPOLATION_VALUE = 5;
+
+% audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30);
 
 % audioFile = "./audio/appx40to50.wav"; TRUE_V_MPH = 45;
     % Source estimate was approximately 40 to 50 mph, so acceptable.
     % Line drawn in the middle of the range
 
-% Requires cutoff and interpolation
-% audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
-% INTERPOLATION_VALUE = 10;
+% Requires cutoff, still poor quality, cannot find the line!
+audioFile = "./audio/50mphobserver.wav"; TRUE_V_MPH = 50; 
+INTERPOLATION_VALUE = 5;
 
 % Slightly inaccurate; overtones actually help the program
 % audioFile = "./audio/test_10mps.wav"; TRUE_V_MPH = mps2mph(10);
@@ -58,7 +61,7 @@ audioFile = "./audio/onecar/30kph.wav"; TRUE_V_MPH = kph2mph(30);
 % BROKEN
 % Incredibly low number of velocity estimates;
 % audioFile = "./audio/56mph44F.wav"; 
-% TRUE_V_MPH = 56; TEMPERATURE_F = 44; INTERPOLATION_VALUE = 10;
+% TRUE_V_MPH = 56; TEMPERATURE_F = 44; INTERPOLATION_VALUE = 1;
 
 % Likely requires a lower limit (true velocity not 0, may be ~20 mph)
 % audioFile = "./audio/horn.ogg";
@@ -76,7 +79,7 @@ CUTOFF_VELOCITY_MPH = mps2mph(C);
 
 % Additional cutoff if results make no sense
 % 100 mph reasonable for automobiles
-% CUTOFF_VELOCITY_MPH = 150;
+CUTOFF_VELOCITY_MPH = 150;
 
 
 %
@@ -333,7 +336,7 @@ end
 estLine = yline(finalVelEst, "b");
 cutLine = yline(CUTOFF_VELOCITY_MPH, "m");
 l = legend([estLine, cutLine], "Estimate", "Cutoff");
-l.Direction = "reverse";
+%l.Direction = "reverse"; %requires MATLAB 2023b
 l.Location = "northwest";
 
 fprintf("\nFinal velocity estimate is %f mph. (%f km/h, %f m/s)\n" ...

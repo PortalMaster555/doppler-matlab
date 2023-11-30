@@ -173,10 +173,12 @@ ax.YLim = [0 200];
 [pksBeg, locsBeg] = findpeaks(begFreqAvgs, MinPeakProminence=MIN_FREQ_PROMINENCE);
 hold on;
 Ampa = begFreqAvgs(locsBeg);
-plot(f(locsBeg), Ampa, "or");
+plot(f(locsBeg), Ampa, "or", MarkerFaceColor="red");
 title("Highest Prominence Beginning Peaks");
 xlabel("Frequency (Hz)"); %xlim = [0 15000];
-ylabel("Amplitude"); %ylim = [0 200];
+ylabel("Mean Amplitude"); %ylim = [0 200];
+
+ax.FontSize = 18;
 
 ax = nexttile;
 stem(f, endFreqAvgs, ".b");
@@ -187,10 +189,11 @@ ax.YLim = [0 200];
 [pksEnd, locsEnd] = findpeaks(endFreqAvgs, MinPeakProminence=MIN_FREQ_PROMINENCE);
 hold on;
 Ampr = endFreqAvgs(locsEnd);
-plot(f(locsEnd), Ampr, "or");
+plot(f(locsEnd), Ampr, "or", MarkerFaceColor="red");
 title("Highest Prominence End Peaks");
 xlabel("Frequency (Hz)"); %xlim = [0 15000];
-ylabel("Amplitude"); %ylim = [0 200];
+ylabel("Mean Amplitude"); %ylim = [0 200];
+ax.FontSize = 18;
 
 tlayout.TileSpacing = 'compact';
 tlayout.Padding = 'compact';
@@ -276,7 +279,7 @@ else
     title("Peaks of the Gradient of the Possible Velocity Curve");
     xlabel("Frequency (Hz)")
     ylabel("\DeltaMPH");
-    
+    fontsize(24,"points");
     % Idea: Sum of the points in the regions between peaks
     %       should be close to 0 for the region to be FLAT
 
@@ -340,10 +343,11 @@ else
             "True Velocity", "Cutoff");
         %l.Direction = "reverse"; %requires MATLAB 2023b
         l.Location = "northwest";
+        ax.FontSize = 18;
     ax = nexttile;
     LINE_WIDTH = 2;
         % stem(mps2mph(sourceV), "b");
-        plot(sortMphVels, ".r");
+        plot(sortMphVels, ".r",MarkerSize=24);
         ylabel("Velocity (MPH)");
         xlabel("Index");
         title("Zoomed In View of Possible Velocity Curve and Solution");
@@ -357,6 +361,7 @@ else
         l.Location = "northwest";
         ax.XLim = [0 highX];
         ax.YLim = [0 highY];
+        ax.FontSize = 18;
     tlayout.TileSpacing = 'compact';
     tlayout.Padding = 'compact';
 end
@@ -390,6 +395,6 @@ end
 
 % SAVE FIGURES USING export_fig PACKAGE
 % figure(1); set(gcf, 'Color', 'w'); export_fig figure1.png -m2.5;
-% figure(11); set(gcf, 'Color', 'w'); export_fig figure11.png -m2.5;
-% figure(16); set(gcf, 'Color', 'w'); export_fig figure16.png -m2.5;
-% figure(22); set(gcf, 'Color', 'w'); export_fig figure22.png -m2.5;
+%figure(11); set(gcf, 'Color', 'w'); export_fig figure11.png -m2.5;
+%figure(16); set(gcf, 'Color', 'w'); export_fig figure16.png -m2.5;
+%figure(22); set(gcf, 'Color', 'w'); export_fig figure22.png -m2.5;
